@@ -1,0 +1,29 @@
+{
+  "entities": {
+    "Project": {
+      "title": "Project",
+      "description": "Portfolio project data",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "category": { "type": "string" },
+        "type": { "type": "string", "enum": ["3D", "WEB"] },
+        "image": { "type": "string", "format": "uri" },
+        "model3d": { "type": "string", "format": "uri" },
+        "modelFormat": { "type": "string", "enum": ["glb", "stl"] },
+        "projectUrl": { "type": "string", "format": "uri" },
+        "previewType": { "type": "string", "enum": ["image", "iframe"] },
+        "visible": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "type", "visible", "createdAt"]
+    }
+  },
+  "firestore": {
+    "projects/{projectId}": {
+      "schema": "Project",
+      "description": "Collection of projects"
+    }
+  }
+}
