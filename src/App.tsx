@@ -8,6 +8,7 @@ import { About } from "./pages/About";
 import { Contact } from "./pages/Contact";
 import Admin from "./pages/Admin";
 import { motion, AnimatePresence } from "motion/react";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 
 function App() {
   return (
@@ -51,6 +52,7 @@ function App() {
             <a href="https://www.instagram.com/pedrolucas1617?igsh=MXdqbzQyZ2VxbHd1Zg==" target="_blank" rel="noopener noreferrer" className="hover:text-accent-green transition-colors">INSTAGRAM</a>
           </div>
         </footer>
+        <SpeedInsights />
       </div>
     </Router>
   );
