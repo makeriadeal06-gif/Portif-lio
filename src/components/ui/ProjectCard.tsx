@@ -25,6 +25,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
   className,
 }) => {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [modalActiveTab, setModalActiveTab] = useState<"preview" | "details">("preview");
   const [isIframeLoading, setIsIframeLoading] = useState(true);
   const [showSitePreview, setShowSitePreview] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
@@ -132,15 +133,21 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
       <motion.div
         layoutId={`card-${title}`}
         whileHover={!isMobile ? { scale: 1.02 } : {}}
-        onClick={() => setIsPreviewOpen(true)}
-        className={cn("group flex flex-col glass-panel hover:border-accent-green/30 transition-all duration-500 overflow-hidden cursor-pointer", className)}
+        className={cn("group flex flex-col glass-panel hover:border-accent-green/30 transition-all duration-500 overflow-hidden", className)}
       >
-        <div className="relative h-48 overflow-hidden group/img">
+        <div 
+          className="relative h-48 overflow-hidden group/img cursor-pointer"
+          onClick={() => {
+            setModalActiveTab("preview");
+            setIsPreviewOpen(true);
+          }}
+        >
           <div className="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-colors z-10" />
           {image ? (
             <img
               src={image}
               alt={title}
+              loading="lazy"
               className="w-full h-full object-cover scale-105 group-hover:scale-110 transition-transform duration-700 grayscale group-hover:grayscale-0"
             />
           ) : (
@@ -151,7 +158,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
           
           <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity z-20">
             <div className="bg-accent-green/20 backdrop-blur-sm border border-accent-green/40 text-accent-green px-4 py-2 font-mono text-[10px] tracking-[0.3em] shadow-glow">
-              INITIALIZE_PREVIEW()
+              VIEW_3D_MODEL()
             </div>
           </div>
 
@@ -163,7 +170,13 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
           </div>
         </div>
 
-        <div className="p-6 flex flex-col flex-grow">
+        <div 
+          className="p-6 flex flex-col flex-grow cursor-pointer"
+          onClick={() => {
+            setModalActiveTab("details");
+            setIsPreviewOpen(true);
+          }}
+        >
           <h3 className="text-lg font-bold tracking-tight mb-2 flex items-center justify-between">
             <span>{title}</span>
             <Layers className="w-4 h-4 text-white/20 group-hover:text-accent-green transition-colors" />
@@ -237,9 +250,32 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
               className="relative w-full max-w-6xl glass-panel overflow-hidden flex flex-col h-[80vh] max-h-[90vh]"
             >
               <div className="p-4 border-b border-white/10 flex items-center justify-between bg-black/40">
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 rounded-full bg-accent-green animate-pulse" />
-                  <h3 className="font-mono text-sm tracking-widest font-bold text-accent-green">{title.toUpperCase()}</h3>
+                <div className="flex items-center gap-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 rounded-full bg-accent-green animate-pulse" />
+                    <h3 className="font-mono text-sm tracking-widest font-bold text-accent-green">{title.toUpperCase()}</h3>
+                  </div>
+                  
+                  <div className="flex bg-white/5 p-1 rounded-sm border border-white/10">
+                    <button 
+                      onClick={() => setModalActiveTab("preview")}
+                      className={cn(
+                        "px-3 py-1 text-[9px] font-mono transition-all",
+                        modalActiveTab === "preview" ? "bg-accent-green text-black" : "text-white/40 hover:text-white"
+                      )}
+                    >
+                      {type === "3D" ? "MODEL_3D" : "LIVE_PREVIEW"}
+                    </button>
+                    <button 
+                      onClick={() => setModalActiveTab("details")}
+                      className={cn(
+                        "px-3 py-1 text-[9px] font-mono transition-all",
+                        modalActiveTab === "details" ? "bg-accent-green text-black" : "text-white/40 hover:text-white"
+                      )}
+                    >
+                      DOCS_&_DETAILS
+                    </button>
+                  </div>
                 </div>
                 <button 
                   onClick={() => setIsPreviewOpen(false)}
@@ -249,8 +285,83 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
                 </button>
               </div>
 
-              <div className={cn("flex-grow p-1", type === "WEB" ? "overflow-hidden" : "overflow-auto")}>
-                {renderPreview()}
+              <div className={cn("flex-grow p-1 overflow-auto bg-[#0a0a0a]")}>
+                {modalActiveTab === "preview" ? (
+                  <div className="w-full h-full min-h-[400px]">
+                    {renderPreview()}
+                  </div>
+                ) : (
+                  <div className="p-6 md:p-12 max-w-4xl mx-auto space-y-12">
+                    <section className="space-y-4">
+                      <div className="flex items-center gap-2 text-accent-green text-[10px] font-mono tracking-widest uppercase">
+                        <Zap className="w-3 h-3" />
+                        Project_Overview
+                      </div>
+                      <h4 className="text-3xl font-bold tracking-tight text-white">{title}</h4>
+                      <p className="text-white/60 font-mono text-sm leading-relaxed border-l-2 border-accent-green/20 pl-6">
+                        {description}
+                      </p>
+                    </section>
+
+                    <section className="space-y-6">
+                      <div className="flex items-center gap-2 text-accent-green text-[10px] font-mono tracking-widest uppercase">
+                        <Layers className="w-3 h-3" />
+                        System_Composition
+                      </div>
+                      <div className="flex flex-wrap gap-3">
+                        {tags.map((tag) => (
+                          <div 
+                            key={tag}
+                            className="px-4 py-2 border border-white/10 bg-white/5 rounded-sm flex items-center gap-3 group/tag hover:border-accent-green/50 transition-colors"
+                          >
+                            <div className="w-1.5 h-1.5 rounded-full bg-accent-green/20 group-hover/tag:bg-accent-green transition-colors" />
+                            <span className="text-[10px] font-mono text-white/60 group-hover/tag:text-white">#{tag.toUpperCase()}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+                    
+                    <section className="pt-8 border-t border-white/5 grid md:grid-cols-2 gap-8">
+                       <div className="space-y-4">
+                          <div className="text-[10px] font-mono text-white/20 uppercase tracking-widest">Metadata</div>
+                          <div className="space-y-2">
+                             <div className="flex items-center justify-between text-[11px] font-mono">
+                                <span className="text-white/30">TYPE_CLASS:</span>
+                                <span className="text-white/70">{type}</span>
+                             </div>
+                             <div className="flex items-center justify-between text-[11px] font-mono">
+                                <span className="text-white/30">CATEGORY:</span>
+                                <span className="text-white/70">{category}</span>
+                             </div>
+                             {modelFormat && (
+                               <div className="flex items-center justify-between text-[11px] font-mono">
+                                  <span className="text-white/30">GEOMETRY_FORMAT:</span>
+                                  <span className="text-white/70">{modelFormat.toUpperCase()}</span>
+                               </div>
+                             )}
+                          </div>
+                       </div>
+
+                       <div className="space-y-4">
+                          <div className="text-[10px] font-mono text-white/20 uppercase tracking-widest">External_Links</div>
+                          <div className="flex flex-col gap-2">
+                            {projectUrl && (
+                               <a href={projectUrl} target="_blank" rel="noreferrer" className="flex items-center justify-between p-3 bg-white/5 border border-white/10 hover:border-accent-green/50 transition-all text-xs font-mono group/link">
+                                  <span className="text-white/60 group-hover/link:text-white">LIVE_ENVIRONMENT</span>
+                                  <ExternalLink className="w-3 h-3 text-accent-green" />
+                               </a>
+                            )}
+                            {github && (
+                               <a href={github} target="_blank" rel="noreferrer" className="flex items-center justify-between p-3 bg-white/5 border border-white/10 hover:border-accent-green/50 transition-all text-xs font-mono group/link">
+                                  <span className="text-white/60 group-hover/link:text-white">REPOSITORY_CODE</span>
+                                  <Github className="w-3 h-3 text-accent-green" />
+                               </a>
+                            )}
+                          </div>
+                       </div>
+                    </section>
+                  </div>
+                )}
               </div>
 
               <div className="p-4 bg-black/60 border-t border-white/10 flex items-center justify-between">

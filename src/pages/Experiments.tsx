@@ -121,7 +121,14 @@ export const Experiments: React.FC = () => {
                     setShowPreview(null);
                   }}
                   onMouseMove={(e) => {
-                    if (showPreview) setMousePos({ x: e.clientX, y: e.clientY });
+                    if (showPreview) {
+                      const now = Date.now();
+                      if (now - (previewTimer.current?.lastMove || 0) > 16) { // ~60fps
+                        setMousePos({ x: e.clientX, y: e.clientY });
+                        if (!previewTimer.current) previewTimer.current = {};
+                        previewTimer.current.lastMove = now;
+                      }
+                    }
                   }}
                 >
                   <div className="p-6 h-full glass-panel flex flex-col gap-5 group hover:border-accent-green/30 transition-all duration-500 hover:shadow-[0_0_30px_rgba(0,255,65,0.03)]">

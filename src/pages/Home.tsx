@@ -69,7 +69,15 @@ export const Home: React.FC = () => {
             transition={{ duration: 1.2, ease: "easeOut" }}
             className="h-[350px] sm:h-[450px] lg:h-[500px] xl:h-[600px] w-full relative"
           >
-            <ModelViewer models={["/models/cube.glb", "/models/sphere.glb", "/models/knot.glb"]} />
+            <ModelViewer models={[
+              "/models/torus.glb",
+              "/models/knot.glb",
+              "/models/octahedron.glb",
+              "/models/tetrahedron.glb",
+              "/models/dodecahedron.glb",
+              "/models/icosahedron.glb",
+              "/models/sphere.glb"
+            ]} />
             <div className="mt-4 flex animate-pulse-soft items-center justify-between text-[7px] sm:text-[8px] font-mono text-white/20 whitespace-nowrap overflow-hidden">
               <span>RENDER_ENGINE: WEB_GL_2.0</span>
               <span className="hidden sm:inline">GEOMETRY: OPTIMIZED</span>

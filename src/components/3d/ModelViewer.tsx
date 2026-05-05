@@ -209,10 +209,42 @@ const ModelContent: React.FC<{ model: string | ModelData }> = ({ model }) => {
   }, [model, url]);
 
   // Handle local placeholders
-  if (url.includes("cube.glb")) {
+  if (url.includes("octahedron.glb")) {
     return (
       <mesh castShadow receiveShadow>
-        <boxGeometry args={[1.2, 1.2, 1.2]} />
+        <octahedronGeometry args={[1, 0]} />
+        <meshStandardMaterial color="#00ff41" wireframe precision="mediump" envMapIntensity={0.5} />
+      </mesh>
+    );
+  }
+  if (url.includes("dodecahedron.glb")) {
+    return (
+      <mesh castShadow receiveShadow>
+        <dodecahedronGeometry args={[1, 0]} />
+        <meshStandardMaterial color="#00ff41" wireframe precision="mediump" envMapIntensity={0.5} />
+      </mesh>
+    );
+  }
+  if (url.includes("icosahedron.glb")) {
+    return (
+      <mesh castShadow receiveShadow>
+        <icosahedronGeometry args={[1, 0]} />
+        <meshStandardMaterial color="#00ff41" wireframe precision="mediump" envMapIntensity={0.5} />
+      </mesh>
+    );
+  }
+  if (url.includes("tetrahedron.glb")) {
+    return (
+      <mesh castShadow receiveShadow>
+        <tetrahedronGeometry args={[1, 0]} />
+        <meshStandardMaterial color="#00ff41" wireframe precision="mediump" envMapIntensity={0.5} />
+      </mesh>
+    );
+  }
+  if (url.includes("torus.glb")) {
+    return (
+      <mesh castShadow receiveShadow>
+        <torusGeometry args={[0.8, 0.3, 12, 48]} />
         <meshStandardMaterial color="#00ff41" wireframe precision="mediump" envMapIntensity={0.5} />
       </mesh>
     );
@@ -220,7 +252,7 @@ const ModelContent: React.FC<{ model: string | ModelData }> = ({ model }) => {
   if (url.includes("sphere.glb")) {
     return (
       <mesh castShadow receiveShadow>
-        <sphereGeometry args={[0.8, 64, 64]} />
+        <sphereGeometry args={[0.8, 32, 32]} />
         <meshStandardMaterial color="#00ff41" wireframe precision="mediump" envMapIntensity={0.5} />
       </mesh>
     );
@@ -228,7 +260,7 @@ const ModelContent: React.FC<{ model: string | ModelData }> = ({ model }) => {
   if (url.includes("knot.glb")) {
     return (
       <mesh castShadow receiveShadow>
-        <torusKnotGeometry args={[0.6, 0.2, 200, 32]} />
+        <torusKnotGeometry args={[0.6, 0.2, 120, 24]} />
         <meshStandardMaterial color="#00ff41" wireframe precision="mediump" envMapIntensity={0.5} />
       </mesh>
     );
@@ -274,7 +306,17 @@ export const ModelViewer: React.FC<ModelViewerProps> = ({ models, autoRotate: in
   const [currentIndex, setCurrentIndex] = useState(0);
   const [autoRotate, setAutoRotate] = useState(initialAutoRotate);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isMobileDevice, setIsMobileDevice] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobileDevice(window.matchMedia("(max-width: 768px)").matches);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   const nextModel = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -357,16 +399,15 @@ export const ModelViewer: React.FC<ModelViewerProps> = ({ models, autoRotate: in
       {/* Scene */}
       <Suspense fallback={<ModelLoader />}>
         <Canvas 
-          shadows={{ type: THREE.PCFShadowMap }}
-          dpr={[1, 2]}
+          shadows={{ type: isMobileDevice ? THREE.BasicShadowMap : THREE.PCFShadowMap }}
+          dpr={isMobileDevice ? [1, 1] : [1, 2]}
           gl={{ 
-            antialias: true,
+            antialias: !isMobileDevice,
             alpha: true,
             powerPreference: "high-performance",
-            precision: "mediump",
-            toneMapping: THREE.ACESFilmicToneMapping,
-            toneMappingExposure: 1.0,
+            precision: isMobileDevice ? "lowp" : "mediump",
           }}
+          performance={{ min: 0.5 }}
           camera={{ position: [5, 5, 5], fov: 35 }}
         >
           <color attach="background" args={["#0a0a0a"]} />
