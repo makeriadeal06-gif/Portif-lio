@@ -54,6 +54,7 @@ function App() {
             <a href="https://www.instagram.com/pedrolucas1617?igsh=MXdqbzQyZ2VxbHd1Zg==" target="_blank" rel="noopener noreferrer" className="hover:text-accent-green transition-colors">INSTAGRAM</a>
           </div>
         </footer>
+        <SpeedInsights />
       </div>
     </Router>
   );
