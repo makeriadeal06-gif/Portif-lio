@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "motion/react";
-import { ProjectCard, ProjectData } from "../components/ui/ProjectCard";
+import { ProjectCard } from "../components/ui/ProjectCard";
+import { ProjectData } from "../types";
 import { ScrollReveal } from "../components/ui/ScrollReveal";
 import { db, OperationType, handleFirestoreError } from "../lib/firebase";
 import { collection, query, where, orderBy, onSnapshot } from "firebase/firestore";
@@ -12,8 +13,7 @@ export const Projects: React.FC = () => {
   useEffect(() => {
     const q = query(
       collection(db, "projects"), 
-      where("visible", "==", true),
-      orderBy("createdAt", "desc")
+      where("visible", "==", true)
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -21,7 +21,19 @@ export const Projects: React.FC = () => {
         id: doc.id,
         ...doc.data()
       })) as ProjectData[];
-      setProjects(projs);
+
+      // Ordenação manual para evitar erro de índice composto
+      const sortedProjs = projs.sort((a, b) => {
+        const orderA = a.order ?? 999;
+        const orderB = b.order ?? 999;
+        if (orderA !== orderB) return orderA - orderB;
+        
+        const dateA = a.createdAt?.seconds ?? 0;
+        const dateB = b.createdAt?.seconds ?? 0;
+        return dateB - dateA;
+      });
+
+      setProjects(sortedProjs);
       setIsLoading(false);
     }, (error) => {
       handleFirestoreError(error, OperationType.LIST, "projects");
@@ -35,9 +47,15 @@ export const Projects: React.FC = () => {
     <div className="min-h-screen pt-24 pb-12 px-6">
       <div className="max-w-7xl mx-auto">
         <ScrollReveal>
-          <div className="mb-12 border-l-2 border-accent-green pl-6">
-            <span className="text-[10px] font-mono text-accent-green tracking-[0.3em]">REPOSITORIES_ARCHIVE</span>
-            <h2 className="text-4xl font-bold tracking-tighter uppercase mt-2">DEPLOYED_SYSTEMS</h2>
+          <div className="mb-12 border-l-2 border-accent-green pl-6 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+            <div>
+              <span className="text-[10px] font-mono text-accent-green tracking-[0.3em]">REPOSITORIES_ARCHIVE</span>
+              <h2 className="text-4xl font-bold tracking-tighter uppercase mt-2">DEPLOYED_SYSTEMS</h2>
+            </div>
+            <div className="text-[9px] font-mono text-white/40 uppercase tracking-widest leading-relaxed flex flex-col gap-1">
+              <span className="flex items-center gap-2"><div className="w-1 h-1 bg-accent-green rounded-full underline" /> CLIQUE NO CARD PARA ABRIR JANELA FLUTUANTE</span>
+              <span className="flex items-center gap-2"><div className="w-1 h-1 bg-accent-green rounded-full" /> PREVIEW RÁPIDO AO PASSAR O CURSOR</span>
+            </div>
           </div>
         </ScrollReveal>
 

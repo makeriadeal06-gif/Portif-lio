@@ -15,10 +15,10 @@ export const About: React.FC = () => {
           </ScrollReveal>
 
           <ScrollReveal delay={0.1}>
-            <p className="text-white/60 font-mono text-xs sm:text-sm leading-relaxed">
-              Pedro Lucas é um desenvolvedor focado na interseção entre a engenharia física e a lógica computacional.
-              Com formação técnica em Eletrotécnica, minha visão de desenvolvimento de software é pautada por precisão,
-              eficiência energética e estabilidade de sistemas.
+            <p className="text-white/60 font-mono text-xs sm:text-sm leading-relaxed whitespace-pre-line">
+              Sou Pedro Lucas. Trabalho com tecnologia de forma prática — gosto de ver o que construo funcionando fora da tela, no mundo real.
+              {"\n"}
+              Minha base em Eletrotécnica influencia tudo o que faço: penso em cada sistema para ser preciso, eficiente e confiável no dia a dia, não só no papel.
             </p>
           </ScrollReveal>
 

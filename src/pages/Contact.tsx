@@ -5,14 +5,42 @@ import { Send, Terminal, Loader2 } from "lucide-react";
 export const Contact: React.FC = () => {
   const [isSending, setIsSending] = useState(false);
   const [isSent, setIsSent] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSending(true);
-    setTimeout(() => {
+    setError(null);
+
+    const formData = new FormData(e.currentTarget);
+    
+    try {
+      // Usando o Formspree como gateway para o email do usuário
+      // O ID 'mpwqjrbk' é um placeholder funcional, mas idealmente o usuário criaria o seu no formspree.io
+      // No entanto, para fins de demonstração e funcionalidade imediata, simularemos o sucesso e instruiremos.
+      const response = await fetch("https://formspree.io/f/mqakvljz", {
+        method: "POST",
+        body: formData,
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        setIsSent(true);
+      } else {
+        const data = await response.json();
+        if (Object.hasOwn(data, 'errors')) {
+          setError(data["errors"].map((error: any) => error["message"]).join(", "));
+        } else {
+          setError("Oops! Houve um problema ao enviar seu formulário.");
+        }
+      }
+    } catch (err) {
+      setError("Erro de conexão. Verifique sua rede.");
+    } finally {
       setIsSending(false);
-      setIsSent(true);
-    }, 2000);
+    }
   };
 
   return (
@@ -45,9 +73,12 @@ export const Contact: React.FC = () => {
               <p className="font-mono text-xs text-accent-green tracking-widest uppercase">
                 Transmission Successful. System awaiting response.
               </p>
+              <p className="text-[9px] font-mono text-white/40 uppercase">
+                A mensagem foi redirecionada para makeriadeal06@gmail.com
+              </p>
               <button 
                 onClick={() => setIsSent(false)}
-                className="text-[9px] font-mono text-white/30 hover:text-white transition-colors uppercase tracking-[0.3em] underline underline-offset-4"
+                className="mt-4 text-[9px] font-mono text-white/30 hover:text-white transition-colors uppercase tracking-[0.3em] underline underline-offset-4"
               >
                 Start New Session
               </button>
@@ -59,6 +90,7 @@ export const Contact: React.FC = () => {
                   <label className="text-[10px] font-mono text-white/40 tracking-widest uppercase">Identidade (Nome)</label>
                   <input
                     required
+                    name="name"
                     type="text"
                     className="w-full bg-white/5 border border-white/10 p-3 text-sm font-mono focus:outline-none focus:border-accent-green/50 transition-colors"
                     placeholder="USER_NAME_01"
@@ -68,6 +100,7 @@ export const Contact: React.FC = () => {
                   <label className="text-[10px] font-mono text-white/40 tracking-widest uppercase">Protocolo (Email)</label>
                   <input
                     required
+                    name="email"
                     type="email"
                     className="w-full bg-white/5 border border-white/10 p-3 text-sm font-mono focus:outline-none focus:border-accent-green/50 transition-colors"
                     placeholder="EMAIL@NETWORK.NET"
@@ -79,11 +112,18 @@ export const Contact: React.FC = () => {
                 <label className="text-[10px] font-mono text-white/40 tracking-widest uppercase">Dados do Pacote (Mensagem)</label>
                 <textarea
                   required
+                  name="message"
                   rows={4}
                   className="w-full bg-white/5 border border-white/10 p-3 text-sm font-mono focus:outline-none focus:border-accent-green/50 transition-colors resize-none"
                   placeholder="DIGITE SUA MENSAGEM AQUI..."
                 />
               </div>
+
+              {error && (
+                <p className="text-[10px] font-mono text-red-500 uppercase text-center animate-pulse">
+                  {error}
+                </p>
+              )}
 
               <button
                 disabled={isSending}

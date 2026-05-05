@@ -1,26 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { ExternalLink, Github, Layers, Zap, X, Maximize2, Box, Globe } from "lucide-react";
+import { ExternalLink, Github, Layers, Zap, X, Maximize2, Box, Globe, Loader2 } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { ModelViewer } from "../3d/ModelViewer";
 import { SitePreview } from "./SitePreview";
-
-export interface ProjectData {
-  id?: string;
-  title: string;
-  category: string;
-  description: string;
-  tags: string[];
-  image: string;
-  type: "3D" | "WEB";
-  model3d?: string;
-  modelFormat?: "glb" | "stl";
-  projectUrl?: string;
-  previewType?: "image" | "iframe";
-  github?: string;
-  visible: boolean;
-  createdAt: any;
-}
+import { ProjectData } from "../../types";
 
 interface ProjectCardProps extends ProjectData {
   className?: string;
@@ -41,6 +25,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
   className,
 }) => {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [isIframeLoading, setIsIframeLoading] = useState(true);
   const [showSitePreview, setShowSitePreview] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isMobile, setIsMobile] = useState(false);
@@ -77,6 +62,12 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
     setMousePos({ x: e.clientX, y: e.clientY });
   };
 
+  useEffect(() => {
+    if (isPreviewOpen) {
+      setIsIframeLoading(true);
+    }
+  }, [isPreviewOpen]);
+
   const renderPreview = () => {
     if (type === "3D" && model3d) {
       return (
@@ -87,28 +78,44 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
     }
 
     if (type === "WEB" && projectUrl) {
-      if (previewType === "iframe") {
-        return (
-          <div className="w-full h-full min-h-[500px] bg-white rounded overflow-hidden">
-            <iframe 
-              src={projectUrl} 
-              className="w-full h-full border-none"
-              title={title}
-              sandbox="allow-scripts allow-same-origin"
-            />
-          </div>
-        );
-      }
+      return (
+        <div className="w-full h-full relative group/modal-preview bg-white">
+          <AnimatePresence>
+            {isIframeLoading && (
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 flex flex-col items-center justify-center bg-[#0a0a0a] text-accent-green gap-3 z-20"
+              >
+                <Loader2 className="w-8 h-8 animate-spin" />
+                <span className="text-[10px] font-mono tracking-widest uppercase animate-pulse">ESTABLISHING_LINK...</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          <iframe 
+            src={projectUrl} 
+            className="w-full h-full border-none relative z-10"
+            title={title}
+            onLoad={() => setIsIframeLoading(false)}
+            sandbox="allow-scripts allow-forms allow-same-origin"
+          />
+          <div className="absolute inset-0 pointer-events-none border-4 border-accent-green/20 opacity-0 group-hover/modal-preview:opacity-100 transition-opacity z-30" />
+        </div>
+      );
     }
 
     return (
-      <div className="w-full h-full flex items-center justify-center bg-black/20">
+      <div className="w-full h-full flex items-center justify-center bg-black/20 min-h-[300px]">
         {image ? (
           <img src={image} alt={title} className="max-w-full max-h-full object-contain" />
         ) : (
-          <div className="flex flex-col items-center gap-2 text-white/20">
-            <Box className="w-8 h-8 opacity-20" />
-            <span className="text-[10px] font-mono tracking-widest uppercase">No_Asset_Loaded</span>
+          <div className="flex flex-col items-center gap-4 text-white/20">
+            <Box className="w-12 h-12 opacity-20 animate-pulse" />
+            <div className="flex flex-col items-center gap-1">
+              <span className="text-[10px] font-mono tracking-[0.4em] uppercase">No_Asset_Loaded</span>
+              <span className="text-[8px] font-mono opacity-40 uppercase">System awaiting manual direct link access</span>
+            </div>
           </div>
         )}
       </div>
@@ -125,7 +132,8 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
       <motion.div
         layoutId={`card-${title}`}
         whileHover={!isMobile ? { scale: 1.02 } : {}}
-        className={cn("group flex flex-col glass-panel hover:border-accent-green/50 transition-all duration-500 overflow-hidden", className)}
+        onClick={() => setIsPreviewOpen(true)}
+        className={cn("group flex flex-col glass-panel hover:border-accent-green/50 transition-all duration-500 overflow-hidden cursor-pointer", className)}
       >
         <div className="relative h-48 overflow-hidden group/img">
           <div className="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-colors z-10" />
@@ -142,12 +150,9 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
           )}
           
           <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity z-20">
-            <button 
-              onClick={() => setIsPreviewOpen(true)}
-              className="bg-accent-green text-background p-3 rounded-full shadow-glow hover:scale-110 transition-transform"
-            >
-              <Maximize2 className="w-5 h-5" />
-            </button>
+            <div className="bg-accent-green/20 backdrop-blur-sm border border-accent-green/40 text-accent-green px-4 py-2 font-mono text-[10px] tracking-[0.3em] shadow-glow">
+              INITIALIZE_PREVIEW()
+            </div>
           </div>
 
           <div className="absolute top-4 left-4 z-20 flex items-center gap-2">
@@ -179,7 +184,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
             ))}
           </div>
 
-          <div className="flex items-center gap-4 pt-4 border-t border-white/5">
+          <div className="flex items-center gap-4 pt-4 border-t border-white/5" onClick={(e) => e.stopPropagation()}>
             {projectUrl && (
               <a
                 href={projectUrl}
@@ -229,7 +234,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative w-full max-w-6xl glass-panel overflow-hidden flex flex-col max-h-[90vh]"
+              className="relative w-full max-w-6xl glass-panel overflow-hidden flex flex-col h-[80vh] max-h-[90vh]"
             >
               <div className="p-4 border-b border-white/10 flex items-center justify-between bg-black/40">
                 <div className="flex items-center gap-3">
@@ -244,7 +249,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
                 </button>
               </div>
 
-              <div className="flex-grow overflow-auto p-1">
+              <div className={cn("flex-grow p-1", type === "WEB" ? "overflow-hidden" : "overflow-auto")}>
                 {renderPreview()}
               </div>
 

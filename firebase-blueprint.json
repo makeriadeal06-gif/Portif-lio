@@ -15,6 +15,27 @@
         "projectUrl": { "type": "string", "format": "uri" },
         "previewType": { "type": "string", "enum": ["image", "iframe"] },
         "visible": { "type": "boolean" },
+        "order": { "type": "integer" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "type", "visible", "createdAt"]
+    },
+    "Experiment": {
+      "title": "Experiment",
+      "description": "Lab experiments or personal experiences",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "details": { "type": "string" },
+        "type": { "type": "string", "enum": ["LAB", "EXPERIENCE"] },
+        "dateRange": { "type": "string" },
+        "location": { "type": "string" },
+        "tech": { "type": "array", "items": { "type": "string" } },
+        "visible": { "type": "boolean" },
+        "order": { "type": "integer" },
+        "status": { "type": "string" },
+        "projectUrl": { "type": "string", "format": "uri" },
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["title", "type", "visible", "createdAt"]
@@ -24,6 +45,10 @@
     "projects/{projectId}": {
       "schema": "Project",
       "description": "Collection of projects"
+    },
+    "experiments/{experimentId}": {
+      "schema": "Experiment",
+      "description": "Collection of experiments and experiences"
     }
   }
 }

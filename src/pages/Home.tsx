@@ -26,7 +26,7 @@ export const Home: React.FC = () => {
                 Pedro Lucas - <span className="text-accent-green font-outline italic shadow-glow">Ghost System</span>
               </h1>
               <p className="text-white/60 font-mono text-[10px] sm:text-[11px] max-w-lg leading-relaxed mt-4 sm:mt-6 border-l border-accent-green/30 pl-4">
-                <span className="text-accent-green">_CMD:</span> Construindo sistemas onde softwares, hardware e inteligência convergem.
+                <span className="text-accent-green">_CMD:</span> Não desenvolvo apenas software — construo sistemas onde código, hardware e inteligência trabalham como um só.
                 <br /><br />
                 <span className="text-white/20 italic">// Eletrotécnica . Full-Stack . AI_Arch . 3D_Design</span>
               </p>

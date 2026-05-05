@@ -42,13 +42,13 @@ function App() {
 
         <footer className="relative z-10 p-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6 bg-black/40">
           <div className="flex flex-col gap-1">
-            <span className="text-[10px] font-mono text-accent-green tracking-widest">© 2024 PEDRO LUCAS - GHOST SYSTEM</span>
+            <span className="text-[10px] font-mono text-accent-green tracking-widest">© 2026 PEDRO LUCAS - GHOST SYSTEM</span>
             <span className="text-[8px] font-mono text-white/20">ALL_RIGHTS_RESERVED // NO_UNAUTHORIZED_ACCESS</span>
           </div>
           <div className="flex gap-8 items-center text-[9px] font-mono text-white/40 tracking-[0.2em]">
-            <a href="#" className="hover:text-accent-green transition-colors">LINKEDIN</a>
+            <a href="https://www.linkedin.com/in/pedro-lucas-7ab3722bb?utm_source=share_via&utm_content=profile&utm_medium=member_android" target="_blank" rel="noopener noreferrer" className="hover:text-accent-green transition-colors">LINKEDIN</a>
             <a href="#" className="hover:text-accent-green transition-colors">GITHUB</a>
-            <a href="#" className="hover:text-accent-green transition-colors">INSTAGRAM</a>
+            <a href="https://www.instagram.com/pedrolucas1617?igsh=MXdqbzQyZ2VxbHd1Zg==" target="_blank" rel="noopener noreferrer" className="hover:text-accent-green transition-colors">INSTAGRAM</a>
           </div>
         </footer>
       </div>
