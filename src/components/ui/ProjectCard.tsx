@@ -133,7 +133,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
         layoutId={`card-${title}`}
         whileHover={!isMobile ? { scale: 1.02 } : {}}
         onClick={() => setIsPreviewOpen(true)}
-        className={cn("group flex flex-col glass-panel hover:border-accent-green/50 transition-all duration-500 overflow-hidden cursor-pointer", className)}
+        className={cn("group flex flex-col glass-panel hover:border-accent-green/30 transition-all duration-500 overflow-hidden cursor-pointer", className)}
       >
         <div className="relative h-48 overflow-hidden group/img">
           <div className="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-colors z-10" />

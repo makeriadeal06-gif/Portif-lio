@@ -350,7 +350,7 @@ export default function Admin() {
         </div>
         
         <div className="flex items-center gap-4">
-          <div className="flex bg-white/5 p-1 rounded border border-white/10">
+          <div className="flex bg-white/10 p-1 rounded border border-white/20">
             <button 
               onClick={() => { setActiveTab("projects"); setIsEditing(null); setSelectedIds([]); }}
               className={cn(
@@ -390,7 +390,7 @@ export default function Admin() {
               <div className="flex items-center gap-3">
                 <button 
                   onClick={handleSelectAll}
-                  className="text-[10px] font-mono text-white/40 hover:text-accent-green transition-colors uppercase border border-white/5 px-3 py-1.5 rounded-sm bg-white/5"
+                  className="text-[10px] font-mono text-white/60 hover:text-accent-green transition-colors uppercase border border-white/10 px-3 py-1.5 rounded-sm bg-white/10 shadow-sm"
                 >
                   {selectedIds.length === (activeTab === "projects" ? projects.length : experiments.length) ? "Deselect_All" : "Select_All"}
                 </button>
@@ -554,7 +554,7 @@ export default function Admin() {
                     type="text" 
                     value={projectFormData.title} 
                     onChange={e => setProjectFormData(p => ({ ...p, title: e.target.value }))}
-                    className="w-full bg-white/5 border border-white/10 p-2 text-xs focus:border-accent-green outline-none"
+                    className="w-full bg-white/10 border border-white/20 p-2 text-xs focus:border-accent-green outline-none text-white"
                     required
                   />
                 </div>
@@ -565,7 +565,7 @@ export default function Admin() {
                       type="text" 
                       value={projectFormData.category} 
                       onChange={e => setProjectFormData(p => ({ ...p, category: e.target.value }))}
-                      className="w-full bg-white/5 border border-white/10 p-2 text-xs outline-none"
+                      className="w-full bg-white/10 border border-white/20 p-2 text-xs outline-none text-white focus:border-accent-green"
                     />
                   </div>
                   <div>
@@ -573,10 +573,10 @@ export default function Admin() {
                     <select 
                       value={projectFormData.type} 
                       onChange={e => setProjectFormData(p => ({ ...p, type: e.target.value as "3D" | "WEB" }))}
-                      className="w-full bg-white/5 border border-white/10 p-2 text-xs outline-none"
+                      className="w-full bg-white/10 border border-white/20 p-2 text-xs outline-none text-white focus:border-accent-green"
                     >
-                      <option value="WEB">WEB</option>
-                      <option value="3D">3D</option>
+                      <option value="WEB" className="bg-[#1a1a1a] text-white">WEB</option>
+                      <option value="3D" className="bg-[#1a1a1a] text-white">3D</option>
                     </select>
                   </div>
                 </div>
@@ -585,7 +585,7 @@ export default function Admin() {
                   <textarea 
                     value={projectFormData.description} 
                     onChange={e => setProjectFormData(p => ({ ...p, description: e.target.value }))}
-                    className="w-full bg-white/5 border border-white/10 p-2 text-xs focus:border-accent-green outline-none min-h-[80px]"
+                    className="w-full bg-white/10 border border-white/20 p-2 text-xs focus:border-accent-green outline-none min-h-[80px] text-white"
                   />
                 </div>
                 <div>
@@ -633,7 +633,7 @@ export default function Admin() {
                         setProjectFormData(p => ({ ...p, image: url }));
                         setPreviews(p => ({ ...p, image: url || null }));
                       }}
-                      className="w-full bg-white/5 border border-white/10 p-2 text-xs outline-none placeholder:text-white/10 focus:border-accent-green/30"
+                      className="w-full bg-white/10 border border-white/20 p-2 text-xs outline-none placeholder:text-white/20 focus:border-accent-green text-white"
                       placeholder="External URL (optional)"
                     />
                   </div>
@@ -650,7 +650,7 @@ export default function Admin() {
                               type="text" 
                               value={projectFormData.model3d} 
                               onChange={e => setProjectFormData(p => ({ ...p, model3d: e.target.value }))}
-                              className="w-full bg-white/10 border border-white/10 p-2 text-xs outline-none"
+                              className="w-full bg-white/10 border border-white/20 p-2 text-xs outline-none text-white focus:border-accent-green"
                               placeholder="URL or upload →"
                             />
                             {previews.model3d && (
@@ -674,10 +674,10 @@ export default function Admin() {
                         <select 
                           value={projectFormData.modelFormat} 
                           onChange={e => setProjectFormData(p => ({ ...p, modelFormat: e.target.value as "glb" | "stl" }))}
-                          className="w-full bg-white/10 border border-white/10 p-2 text-xs outline-none"
+                          className="w-full bg-white/15 border border-white/20 p-2 text-xs outline-none text-white focus:border-accent-green"
                         >
-                          <option value="glb">GLB (Standard)</option>
-                          <option value="stl">STL (Legacy)</option>
+                          <option value="glb" className="bg-[#1a1a1a] text-white">GLB (Standard)</option>
+                          <option value="stl" className="bg-[#1a1a1a] text-white">STL (Legacy)</option>
                         </select>
                      </div>
                   </div>
@@ -690,7 +690,7 @@ export default function Admin() {
                           type="text" 
                           value={projectFormData.projectUrl} 
                           onChange={e => setProjectFormData(p => ({ ...p, projectUrl: e.target.value }))}
-                          className="w-full bg-white/10 border border-white/10 p-2 text-xs outline-none"
+                          className="w-full bg-white/15 border border-white/20 p-2 text-xs outline-none text-white focus:border-accent-green"
                         />
                       </div>
                       <div>
@@ -721,7 +721,7 @@ export default function Admin() {
                     value={tagInput} 
                     onChange={e => setTagInput(e.target.value)}
                     onBlur={addTag}
-                    className="w-full bg-white/5 border border-white/10 p-2 text-xs outline-none"
+                    className="w-full bg-white/10 border border-white/20 p-2 text-xs outline-none text-white focus:border-accent-green"
                   />
                 </div>
               </>
@@ -734,7 +734,7 @@ export default function Admin() {
                     type="text" 
                     value={experimentFormData.title} 
                     onChange={e => setExperimentFormData(p => ({ ...p, title: e.target.value }))}
-                    className="w-full bg-white/5 border border-white/10 p-2 text-xs focus:border-accent-green outline-none"
+                    className="w-full bg-white/10 border border-white/20 p-2 text-xs focus:border-accent-green outline-none text-white"
                     required
                   />
                 </div>
@@ -744,10 +744,10 @@ export default function Admin() {
                     <select 
                       value={experimentFormData.type} 
                       onChange={e => setExperimentFormData(p => ({ ...p, type: e.target.value as "LAB" | "EXPERIENCE" }))}
-                      className="w-full bg-white/5 border border-white/10 p-2 text-xs outline-none"
+                      className="w-full bg-white/10 border border-white/20 p-2 text-xs outline-none text-white focus:border-accent-green"
                     >
-                      <option value="LAB">LAB</option>
-                      <option value="EXPERIENCE">EXPERIENCE</option>
+                      <option value="LAB" className="bg-[#1a1a1a] text-white">LAB</option>
+                      <option value="EXPERIENCE" className="bg-[#1a1a1a] text-white">EXPERIENCE</option>
                     </select>
                   </div>
                   <div>
@@ -756,7 +756,7 @@ export default function Admin() {
                       type="text" 
                       value={experimentFormData.status} 
                       onChange={e => setExperimentFormData(p => ({ ...p, status: e.target.value }))}
-                      className="w-full bg-white/5 border border-white/10 p-2 text-xs outline-none"
+                      className="w-full bg-white/10 border border-white/20 p-2 text-xs outline-none text-white focus:border-accent-green"
                       placeholder="STABLE, BETA, 2021-2023..."
                     />
                   </div>
@@ -766,7 +766,7 @@ export default function Admin() {
                   <textarea 
                     value={experimentFormData.description} 
                     onChange={e => setExperimentFormData(p => ({ ...p, description: e.target.value }))}
-                    className="w-full bg-white/5 border border-white/10 p-2 text-xs focus:border-accent-green outline-none min-h-[60px]"
+                    className="w-full bg-white/10 border border-white/20 p-2 text-xs focus:border-accent-green outline-none min-h-[60px] text-white"
                     placeholder="Short summary..."
                   />
                 </div>
@@ -778,7 +778,7 @@ export default function Admin() {
                         type="text" 
                         value={experimentFormData.dateRange} 
                         onChange={e => setExperimentFormData(p => ({ ...p, dateRange: e.target.value }))}
-                        className="w-full bg-white/5 border border-white/10 p-2 text-xs outline-none"
+                        className="w-full bg-white/10 border border-white/20 p-2 text-xs outline-none text-white focus:border-accent-green"
                         placeholder="Jan 2022 - Mar 2023"
                       />
                     </div>
@@ -788,7 +788,7 @@ export default function Admin() {
                         type="text" 
                         value={experimentFormData.location} 
                         onChange={e => setExperimentFormData(p => ({ ...p, location: e.target.value }))}
-                        className="w-full bg-white/5 border border-white/10 p-2 text-xs outline-none"
+                        className="w-full bg-white/10 border border-white/20 p-2 text-xs outline-none text-white focus:border-accent-green"
                         placeholder="Remoto / São Paulo"
                       />
                     </div>
@@ -801,7 +801,7 @@ export default function Admin() {
                     value={techInput} 
                     onChange={e => setTechInput(e.target.value)}
                     onBlur={addTech}
-                    className="w-full bg-white/5 border border-white/10 p-2 text-xs outline-none"
+                    className="w-full bg-white/10 border border-white/20 p-2 text-xs outline-none text-white focus:border-accent-green"
                     placeholder="react, firestore, glassmorphism"
                   />
                 </div>
@@ -811,7 +811,7 @@ export default function Admin() {
                     type="text" 
                     value={experimentFormData.projectUrl} 
                     onChange={e => setExperimentFormData(p => ({ ...p, projectUrl: e.target.value }))}
-                    className="w-full bg-white/5 border border-white/10 p-2 text-xs outline-none"
+                    className="w-full bg-white/10 border border-white/20 p-2 text-xs outline-none text-white focus:border-accent-green"
                   />
                 </div>
               </>

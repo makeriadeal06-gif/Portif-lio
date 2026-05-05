@@ -124,7 +124,7 @@ export const Experiments: React.FC = () => {
                     if (showPreview) setMousePos({ x: e.clientX, y: e.clientY });
                   }}
                 >
-                  <div className="p-6 h-full glass-panel flex flex-col gap-5 group hover:border-accent-green/40 transition-all duration-500 hover:shadow-[0_0_30px_rgba(0,255,65,0.05)]">
+                  <div className="p-6 h-full glass-panel flex flex-col gap-5 group hover:border-accent-green/30 transition-all duration-500 hover:shadow-[0_0_30px_rgba(0,255,65,0.03)]">
                     <div className="flex items-center justify-between">
                       <div className={cn(
                         "w-12 h-12 rounded-sm flex items-center justify-center border transition-all duration-500",
