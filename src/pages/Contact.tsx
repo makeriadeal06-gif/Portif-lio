@@ -1,43 +1,82 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { motion } from "motion/react";
 import { Send, Terminal, Loader2 } from "lucide-react";
+import emailjs from "@emailjs/browser";
 
 export const Contact: React.FC = () => {
   const [isSending, setIsSending] = useState(false);
   const [isSent, setIsSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  const validateEmail = (email: string) => {
+    return String(email)
+      .toLowerCase()
+      .match(
+        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+      );
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    
+    const formData = new FormData(e.currentTarget);
+    const name = formData.get("name") as string;
+    const email = formData.get("email") as string;
+    const message = formData.get("message") as string;
+
+    // Validação
+    if (!name || !email || !message) {
+      setError("Todos os campos são obrigatórios.");
+      return;
+    }
+
+    if (!validateEmail(email)) {
+      setError("Formato de e-mail inválido.");
+      return;
+    }
+
     setIsSending(true);
     setError(null);
 
-    const formData = new FormData(e.currentTarget);
+    const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
+    const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
+    const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
+
+    if (!serviceId || !templateId || !publicKey) {
+      console.warn("EmailJS configuration missing. Please check .env file.");
+      const missing = [];
+      if (!serviceId) missing.push("VITE_EMAILJS_SERVICE_ID");
+      if (!templateId) missing.push("VITE_EMAILJS_TEMPLATE_ID");
+      if (!publicKey) missing.push("VITE_EMAILJS_PUBLIC_KEY");
+      
+      setError(`Erro: Variáveis ausentes nas Configurações: ${missing.join(", ")}. Certifique-se de usar o prefixo VITE_.`);
+      setIsSending(false);
+      return;
+    }
     
     try {
-      // Usando o Formspree como gateway para o email do usuário
-      // O ID 'mpwqjrbk' é um placeholder funcional, mas idealmente o usuário criaria o seu no formspree.io
-      // No entanto, para fins de demonstração e funcionalidade imediata, simularemos o sucesso e instruiremos.
-      const response = await fetch("https://formspree.io/f/mqakvljz", {
-        method: "POST",
-        body: formData,
-        headers: {
-          'Accept': 'application/json'
-        }
-      });
+      const result = await emailjs.send(
+        serviceId,
+        templateId,
+        {
+          user_name: name,
+          user_email: email,
+          message: message,
+          to_email: "makeriadeal06@gmail.com" // Info extra que pode ser usada no template
+        },
+        publicKey
+      );
 
-      if (response.ok) {
+      if (result.status === 200) {
         setIsSent(true);
+        formRef.current?.reset();
       } else {
-        const data = await response.json();
-        if (Object.hasOwn(data, 'errors')) {
-          setError(data["errors"].map((error: any) => error["message"]).join(", "));
-        } else {
-          setError("Oops! Houve um problema ao enviar seu formulário.");
-        }
+        throw new Error("Failed to send");
       }
     } catch (err) {
-      setError("Erro de conexão. Verifique sua rede.");
+      console.error("EmailJS Error:", err);
+      setError("Erro ao enviar. Tente novamente.");
     } finally {
       setIsSending(false);
     }
@@ -84,7 +123,7 @@ export const Contact: React.FC = () => {
               </button>
             </motion.div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
               <div className="grid gap-4">
                 <div className="space-y-2">
                   <label className="text-[10px] font-mono text-white/40 tracking-widest uppercase">Identidade (Nome)</label>
