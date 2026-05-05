@@ -8,6 +8,7 @@ import { About } from "./pages/About";
 import { Contact } from "./pages/Contact";
 import Admin from "./pages/Admin";
 import { motion, AnimatePresence } from "motion/react";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 
 function App() {
   return (
@@ -39,6 +40,8 @@ function App() {
             </Routes>
           </AnimatePresence>
         </main>
+
+        <SpeedInsights />
 
         <footer className="relative z-10 p-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6 bg-black/40">
           <div className="flex flex-col gap-1">
