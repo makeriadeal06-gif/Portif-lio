@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, signOut, getRedirectResult, setPersistence, browserLocalPersistence } from 'firebase/auth';
-import { getFirestore, collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, query, where, orderBy, onSnapshot, Timestamp } from 'firebase/firestore';
+import { getFirestore, collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, query, where, orderBy, onSnapshot, Timestamp, getDocFromServer } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import firebaseConfig from '../../firebase-applet-config.json';
 
@@ -52,13 +52,44 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
   throw new Error(JSON.stringify(errInfo));
 }
 
-export const signIn = () => {
-  // Use popup for desktop, redirect for mobile
-  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-  if (isMobile) {
-    return signInWithRedirect(auth, googleProvider);
+export async function testConnection() {
+  try {
+    // Attempt to fetch a non-existent document from a 'system' collection to test latency/auth
+    await getDocFromServer(doc(db, '_connection_test_', 'ping'));
+    console.log("[Firebase] Connection test: OK");
+    return true;
+  } catch (error: any) {
+    console.warn("[Firebase] Connection test warning:", error.message);
+    if (error.message.includes("offline")) {
+      console.error("Please check your internet connection.");
+    }
+    return false;
   }
-  return signInWithPopup(auth, googleProvider);
+}
+
+export const signIn = async () => {
+  // Use popup for desktop, redirect for mobile
+  const isMobile = /iPhone|iPad|iPod|Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  
+  // Also check if we are in an iframe (AI Studio environment)
+  const isIframe = window.self !== window.top;
+
+  try {
+    if (isMobile || isIframe) {
+      console.log("[Auth] Starting Redirect Sign-In...");
+      return await signInWithRedirect(auth, googleProvider);
+    }
+    console.log("[Auth] Starting Popup Sign-In...");
+    return await signInWithPopup(auth, googleProvider);
+  } catch (error: any) {
+    console.error("[Auth] Sign-In Error:", error);
+    if (error.code === 'auth/popup-blocked') {
+      alert("Popup blocked! Please allow popups or use 'Open in new tab'.");
+    } else if (error.code === 'auth/internal-error' && error.message.includes('cross-origin')) {
+      alert("Authentication blocked by iframe constraints. Please click 'Open in new tab' to manage your site.");
+    }
+    throw error;
+  }
 };
 
 export const logOut = () => signOut(auth);

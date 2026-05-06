@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Plus, Trash2, Edit2, LogIn, LogOut, Check, X, Box, Globe, Image as ImageIcon, Frame, Layers, Eye, EyeOff, Upload, Loader2, AlertTriangle, ChevronUp, ChevronDown, FlaskConical, Briefcase, Calendar, MapPin, Zap } from "lucide-react";
 import { cn } from "../lib/utils";
-import { auth, db, signIn, logOut, OperationType, handleFirestoreError, getRedirectResult } from "../lib/firebase";
+import { auth, db, signIn, logOut, OperationType, handleFirestoreError, getRedirectResult, testConnection } from "../lib/firebase";
 import { collection, addDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy, Timestamp, doc, writeBatch } from "firebase/firestore";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { ProjectData, ExperimentData } from "../types";
@@ -61,34 +61,47 @@ export default function Admin() {
   const [showBatchConfirm, setShowBatchConfirm] = useState(false);
 
   useEffect(() => {
-    console.log("[Admin] Initializing Auth listener...");
+    console.log("[Admin] Initializing System...");
+    
+    let isMounted = true;
+
+    const initAuth = async () => {
+      try {
+        // 1. Check for redirect result (crucial for mobile/iframe flow)
+        const result = await getRedirectResult(auth);
+        if (result?.user && isMounted) {
+          console.log("[Admin] Redirect result identified:", result.user.email);
+          setUser(result.user);
+          setIsAdmin(result.user.email === ADMIN_EMAIL);
+        }
+      } catch (error: any) {
+        console.error("[Admin] Redirect check failed:", error);
+        if (isMounted) setAuthError(error.message);
+      }
+
+      // 2. Test Firestore connection
+      const isConnected = await testConnection();
+      if (!isConnected && isMounted) {
+        console.warn("[Admin] System might be offline or Firestore unreachable.");
+      }
+    };
+
+    // 3. Listen for Auth State Changes
     const unsubscribeAuth = onAuthStateChanged(auth, (u) => {
-      console.log("[Admin] Auth state changed:", u ? `User: ${u.email}` : "No user");
-      setUser(u);
-      setIsAdmin(u?.email === ADMIN_EMAIL);
-      setIsLoading(false);
+      console.log("[Admin] Auth state delta:", u ? u.email : "GUEST");
+      if (isMounted) {
+        setUser(u);
+        setIsAdmin(u?.email === ADMIN_EMAIL);
+        setIsLoading(false);
+      }
     });
 
-    // Handle redirect result if any
-    setIsLoading(true); // Ensure loading state is true while checking redirect
-    getRedirectResult(auth).then((result) => {
-      if (result) {
-        console.log("[Admin] Redirect result successful:", result.user.email);
-        setUser(result.user);
-        setIsAdmin(result.user.email === ADMIN_EMAIL);
-      }
-    }).catch((error) => {
-      console.error("[Admin] Redirect result error:", error);
-      setAuthError(error.message);
-      // Handle "cross-origin-opener-policy" or Frame errors
-      if (error.code === 'auth/internal-error' && error.message.includes('cross-origin')) {
-        console.warn("Auth might be blocked by iframe constraints. Try opening in a new tab.");
-      }
-    }).finally(() => {
-      setIsLoading(false);
-    });
+    initAuth();
 
-    return () => unsubscribeAuth();
+    return () => {
+      isMounted = false;
+      unsubscribeAuth();
+    };
   }, []);
 
   useEffect(() => {
@@ -333,30 +346,55 @@ export default function Admin() {
           <h1 className="text-2xl font-bold mb-4 tracking-tighter uppercase">
             {user && !isAdmin ? "Access_Denied" : "Admin_Authentication"}
           </h1>
-          <p className="text-white/40 text-sm mb-8 font-mono italic">
-            {user && !isAdmin 
-              ? `Authorized access only. Account ${user.email} does not have administrative clearance.` 
-              : authError 
-                ? `System Error: ${authError}. Please try again or open in a new tab if you are on a mobile device.`
-                : "Access restricted to authorized personnel only."}
-          </p>
+          <div className="text-white/40 text-[10px] space-y-2 mb-8 font-mono border border-white/5 p-4 bg-white/2 text-left">
+            <p className="italic">
+              {user && !isAdmin 
+                ? `Authorized access only. Account [${user.email}] does not have administrative clearance for [${ADMIN_EMAIL}].` 
+                : authError 
+                  ? `System Error: ${authError}. Please try again or open in a new tab if you are on a mobile device.`
+                  : "Access restricted to authorized personnel only."}
+            </p>
+            {user && (
+              <div className="pt-2 border-t border-white/5 flex flex-col gap-1 items-start text-left">
+                <span className="text-accent-green/60 uppercase">Session_Info:</span>
+                <span>UID: {user.uid.slice(0, 8)}...</span>
+                <span>EMAIL: {user.email}</span>
+                <span>VERIFIED: {user.emailVerified ? "TRUE" : "FALSE"}</span>
+              </div>
+            )}
+          </div>
           
           {user && !isAdmin ? (
-            <button 
-              onClick={logOut}
-              className="w-full flex items-center justify-center gap-2 border border-red-500/50 text-red-500 py-3 font-bold hover:bg-red-500/10 transition-all rounded uppercase"
-            >
-              <LogOut className="w-4 h-4" />
-              Terminate Unauthorized Session
-            </button>
+            <div className="space-y-4">
+              <p className="text-[9px] text-red-500/60 uppercase animate-pulse">Unauthorized identity detected</p>
+              <button 
+                onClick={logOut}
+                className="w-full flex items-center justify-center gap-2 border border-red-500/50 text-red-500 py-3 font-bold hover:bg-red-500/10 transition-all rounded uppercase"
+              >
+                <LogOut className="w-4 h-4" />
+                Terminate Unauthorized Session
+              </button>
+            </div>
           ) : (
-            <button 
-              onClick={signIn}
-              className="w-full flex items-center justify-center gap-2 bg-accent-green text-background py-3 font-bold hover:shadow-glow transition-all rounded uppercase"
-            >
-              <LogIn className="w-4 h-4" />
-              Establish Connection
-            </button>
+            <div className="space-y-4">
+              <button 
+                onClick={async () => {
+                  setAuthError(null);
+                  try {
+                    await signIn();
+                  } catch (e: any) {
+                    setAuthError(e.message);
+                  }
+                }}
+                className="w-full flex items-center justify-center gap-2 bg-accent-green text-background py-3 font-bold hover:shadow-glow transition-all rounded uppercase"
+              >
+                <LogIn className="w-4 h-4" />
+                Establish Connection
+              </button>
+              <p className="text-[8px] text-white/20 uppercase tracking-widest">
+                Hint: If connection hangs in AI Studio, use "Open in new tab"
+              </p>
+            </div>
           )}
         </motion.div>
       </div>
