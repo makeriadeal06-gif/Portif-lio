@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Plus, Trash2, Edit2, LogIn, LogOut, Check, X, Box, Globe, Image as ImageIcon, Frame, Layers, Eye, EyeOff, Upload, Loader2, AlertTriangle, ChevronUp, ChevronDown, FlaskConical, Briefcase, Calendar, MapPin, Zap } from "lucide-react";
 import { cn } from "../lib/utils";
-import { auth, db, signIn, logOut, OperationType, handleFirestoreError } from "../lib/firebase";
+import { auth, db, signIn, logOut, OperationType, handleFirestoreError, getRedirectResult } from "../lib/firebase";
 import { collection, addDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy, Timestamp, doc, writeBatch } from "firebase/firestore";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { ProjectData, ExperimentData } from "../types";
@@ -60,10 +60,21 @@ export default function Admin() {
   const [showBatchConfirm, setShowBatchConfirm] = useState(false);
 
   useEffect(() => {
+    console.log("[Admin] Initializing Auth listener...");
     const unsubscribeAuth = onAuthStateChanged(auth, (u) => {
+      console.log("[Admin] Auth state changed:", u ? `User: ${u.email}` : "No user");
       setUser(u);
       setIsAdmin(u?.email === ADMIN_EMAIL);
       setIsLoading(false);
+    });
+
+    // Handle redirect result if any
+    getRedirectResult(auth).then((result) => {
+      if (result) {
+        console.log("[Admin] Redirect result successful:", result.user.email);
+      }
+    }).catch((error) => {
+      console.error("[Admin] Redirect result error:", error);
     });
 
     return () => unsubscribeAuth();

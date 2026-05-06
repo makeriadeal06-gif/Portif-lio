@@ -22,10 +22,22 @@ async function startServer() {
     app.use(vite.middlewares);
   } else {
     // Serve static files in production
-    app.use(express.static(distPath));
+    app.use(express.static(distPath, {
+      maxAge: '1y',
+      index: false
+    }));
     
     // Support SPA routing - send all non-found requests to index.html for clientside navigation
+    // But ONLY if they don't look like file requests (contain a dot in the last segment)
     app.get("*", (req, res) => {
+      const isFileRequest = req.path.split('/').pop()?.includes('.');
+      
+      if (isFileRequest) {
+        console.warn(`[Server] Missing asset: ${req.path}`);
+        return res.status(404).send('Asset not found');
+      }
+
+      console.log(`[Server] Routing to SPA index for: ${req.path}`);
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }
