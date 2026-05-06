@@ -350,11 +350,32 @@ export default function Admin() {
             <p className="italic">
               {user && !isAdmin 
                 ? `Authorized access only. Account [${user.email}] does not have administrative clearance for [${ADMIN_EMAIL}].` 
-                : authError 
-                  ? `System Error: ${authError}. Please try again or open in a new tab if you are on a mobile device.`
-                  : "Access restricted to authorized personnel only."}
+                : authError?.includes("unauthorized-domain")
+                  ? "CRITICAL: The current domain is not authorized in your Firebase Project."
+                  : authError 
+                    ? `System Error: ${authError}. Please try again or open in a new tab if you are on a mobile device.`
+                    : "Access restricted to authorized personnel only."}
             </p>
-            {user && (
+            {authError?.includes("unauthorized-domain") && (
+              <div className="mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded text-[9px] space-y-2">
+                <p className="text-red-400 font-bold uppercase">Manual Authorization Required:</p>
+                <ol className="list-decimal list-inside space-y-1">
+                  <li>Go to Firebase Console &gt; Authentication &gt; Settings</li>
+                  <li>Go to "Authorized domains"</li>
+                  <li>Add this domain: <code className="bg-black/40 px-1">{window.location.hostname}</code></li>
+                </ol>
+                <button 
+                  onClick={() => {
+                    navigator.clipboard.writeText(window.location.hostname);
+                    alert("Domain copied: " + window.location.hostname);
+                  }}
+                  className="mt-2 text-accent-green hover:underline uppercase"
+                >
+                  Copy Domain URL
+                </button>
+              </div>
+            )}
+            {user && !authError?.includes("unauthorized-domain") && (
               <div className="pt-2 border-t border-white/5 flex flex-col gap-1 items-start text-left">
                 <span className="text-accent-green/60 uppercase">Session_Info:</span>
                 <span>UID: {user.uid.slice(0, 8)}...</span>

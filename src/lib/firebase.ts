@@ -87,6 +87,8 @@ export const signIn = async () => {
       alert("Popup blocked! Please allow popups or use 'Open in new tab'.");
     } else if (error.code === 'auth/internal-error' && error.message.includes('cross-origin')) {
       alert("Authentication blocked by iframe constraints. Please click 'Open in new tab' to manage your site.");
+    } else if (error.code === 'auth/unauthorized-domain') {
+      console.error("[Auth] Domain NOT authorized. Please add it to Firebase Console.");
     }
     throw error;
   }
