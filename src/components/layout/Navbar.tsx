@@ -36,7 +36,7 @@ export const Navbar: React.FC = () => {
   return (
     <nav className="fixed top-0 left-0 w-full z-[100] border-b border-white/5 backdrop-blur-md bg-black/20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-        <Link to={isAdmin ? "/admin" : "/"} className="flex items-center gap-2 group">
+        <Link to="/admin" className="flex items-center gap-2 group">
           <div className="w-8 h-8 rounded-sm bg-accent-green flex items-center justify-center shadow-glow group-hover:scale-110 transition-transform flex-shrink-0">
             <Terminal className="w-5 h-5 text-black" />
           </div>
