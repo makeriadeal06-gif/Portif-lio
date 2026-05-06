@@ -15,6 +15,7 @@ export default function Admin() {
   const [projects, setProjects] = useState<ProjectData[]>([]);
   const [experiments, setExperiments] = useState<ExperimentData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [authError, setAuthError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState<string | null>(null);
 
   const ADMIN_EMAIL = "makeriadeal06@gmail.com";
@@ -69,12 +70,22 @@ export default function Admin() {
     });
 
     // Handle redirect result if any
+    setIsLoading(true); // Ensure loading state is true while checking redirect
     getRedirectResult(auth).then((result) => {
       if (result) {
         console.log("[Admin] Redirect result successful:", result.user.email);
+        setUser(result.user);
+        setIsAdmin(result.user.email === ADMIN_EMAIL);
       }
     }).catch((error) => {
       console.error("[Admin] Redirect result error:", error);
+      setAuthError(error.message);
+      // Handle "cross-origin-opener-policy" or Frame errors
+      if (error.code === 'auth/internal-error' && error.message.includes('cross-origin')) {
+        console.warn("Auth might be blocked by iframe constraints. Try opening in a new tab.");
+      }
+    }).finally(() => {
+      setIsLoading(false);
     });
 
     return () => unsubscribeAuth();
@@ -325,7 +336,9 @@ export default function Admin() {
           <p className="text-white/40 text-sm mb-8 font-mono italic">
             {user && !isAdmin 
               ? `Authorized access only. Account ${user.email} does not have administrative clearance.` 
-              : "Access restricted to authorized personnel only."}
+              : authError 
+                ? `System Error: ${authError}. Please try again or open in a new tab if you are on a mobile device.`
+                : "Access restricted to authorized personnel only."}
           </p>
           
           {user && !isAdmin ? (
