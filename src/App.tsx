@@ -1,5 +1,5 @@
-import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import React, { useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import { Navbar } from "./components/layout/Navbar";
 import { Home } from "./pages/Home";
 import { Projects } from "./pages/Projects";
@@ -9,10 +9,27 @@ import { Contact } from "./pages/Contact";
 import Admin from "./pages/Admin";
 import { motion, AnimatePresence } from "motion/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
+import { logAnalyticsEvent } from "./lib/firebase";
+
+// Analytics component to track page views
+const AnalyticsTracker = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    logAnalyticsEvent("page_view", {
+      page_path: location.pathname,
+      page_title: document.title,
+      page_location: window.location.href
+    });
+  }, [location]);
+
+  return null;
+};
 
 function App() {
   return (
     <Router>
+      <AnalyticsTracker />
       <div className="relative min-h-screen bg-background selection:bg-accent-green selection:text-background overflow-x-hidden">
         {/* Background Grid Accent */}
         <div className="fixed inset-0 pointer-events-none opacity-[0.03] z-0">
@@ -49,9 +66,9 @@ function App() {
             <span className="text-[8px] font-mono text-white/20">ALL_RIGHTS_RESERVED // NO_UNAUTHORIZED_ACCESS</span>
           </div>
           <div className="flex gap-8 items-center text-[9px] font-mono text-white/40 tracking-[0.2em]">
-            <a href="https://www.linkedin.com/in/pedro-lucas-7ab3722bb?utm_source=share_via&utm_content=profile&utm_medium=member_android" target="_blank" rel="noopener noreferrer" className="hover:text-accent-green transition-colors">LINKEDIN</a>
-            <a href="#" className="hover:text-accent-green transition-colors">GITHUB</a>
-            <a href="https://www.instagram.com/pedrolucas1617?igsh=MXdqbzQyZ2VxbHd1Zg==" target="_blank" rel="noopener noreferrer" className="hover:text-accent-green transition-colors">INSTAGRAM</a>
+            <a href="https://www.linkedin.com/in/pedro-lucas-7ab3722bb?utm_source=share_via&utm_content=profile&utm_medium=member_android" target="_blank" rel="noopener noreferrer" className="hover:text-accent-green transition-colors" onClick={() => logAnalyticsEvent("click_social_link", { platform: "linkedin" })}>LINKEDIN</a>
+            <a href="#" className="hover:text-accent-green transition-colors" onClick={() => logAnalyticsEvent("click_social_link", { platform: "github" })}>GITHUB</a>
+            <a href="https://www.instagram.com/pedrolucas1617?igsh=MXdqbzQyZ2VxbHd1Zg==" target="_blank" rel="noopener noreferrer" className="hover:text-accent-green transition-colors" onClick={() => logAnalyticsEvent("click_social_link", { platform: "instagram" })}>INSTAGRAM</a>
           </div>
         </footer>
       </div>

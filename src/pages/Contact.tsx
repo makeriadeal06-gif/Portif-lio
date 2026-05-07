@@ -2,6 +2,7 @@ import React, { useState, useRef } from "react";
 import { motion } from "motion/react";
 import { Send, Terminal, Loader2 } from "lucide-react";
 import emailjs from "@emailjs/browser";
+import { logAnalyticsEvent } from "../lib/firebase";
 
 export const Contact: React.FC = () => {
   const [isSending, setIsSending] = useState(false);
@@ -20,6 +21,8 @@ export const Contact: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
+    logAnalyticsEvent("submit_contact_form_attempt");
+    
     const formData = new FormData(e.currentTarget);
     const name = formData.get("name") as string;
     const email = formData.get("email") as string;
@@ -28,11 +31,13 @@ export const Contact: React.FC = () => {
     // Validação
     if (!name || !email || !message) {
       setError("Todos os campos são obrigatórios.");
+      logAnalyticsEvent("submit_contact_form_error", { reason: "missing_fields" });
       return;
     }
 
     if (!validateEmail(email)) {
       setError("Formato de e-mail inválido.");
+      logAnalyticsEvent("submit_contact_form_error", { reason: "invalid_email" });
       return;
     }
 
@@ -51,6 +56,7 @@ export const Contact: React.FC = () => {
       if (!publicKey) missing.push("VITE_EMAILJS_PUBLIC_KEY");
       
       setError(`Erro: Variáveis ausentes nas Configurações: ${missing.join(", ")}. Certifique-se de usar o prefixo VITE_.`);
+      logAnalyticsEvent("submit_contact_form_error", { reason: "config_missing" });
       setIsSending(false);
       return;
     }
@@ -71,12 +77,14 @@ export const Contact: React.FC = () => {
       if (result.status === 200) {
         setIsSent(true);
         formRef.current?.reset();
+        logAnalyticsEvent("submit_contact_form_success");
       } else {
         throw new Error("Failed to send");
       }
     } catch (err) {
       console.error("EmailJS Error:", err);
       setError("Erro ao enviar. Tente novamente.");
+      logAnalyticsEvent("submit_contact_form_error", { reason: "api_failure" });
     } finally {
       setIsSending(false);
     }

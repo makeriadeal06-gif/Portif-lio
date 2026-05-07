@@ -6,6 +6,23 @@ import { ScrollReveal } from "../components/ui/ScrollReveal";
 import { db, OperationType, handleFirestoreError } from "../lib/firebase";
 import { collection, query, where, orderBy, onSnapshot } from "firebase/firestore";
 
+const ProjectSkeleton = () => (
+  <div className="glass-panel overflow-hidden h-full flex flex-col opacity-60">
+    <div className="h-48 bg-white/5 animate-pulse relative" />
+    <div className="p-6 space-y-6">
+      <div className="space-y-3">
+        <div className="h-6 w-2/3 bg-white/5 animate-pulse rounded-sm" />
+        <div className="h-3 w-full bg-white/5 animate-pulse rounded-sm" />
+        <div className="h-3 w-4/5 bg-white/5 animate-pulse rounded-sm" />
+      </div>
+      <div className="flex gap-2 pt-4 border-t border-white/5">
+        <div className="h-3 w-16 bg-white/5 animate-pulse rounded-sm" />
+        <div className="h-3 w-16 bg-white/5 animate-pulse rounded-sm" />
+      </div>
+    </div>
+  </div>
+);
+
 export const Projects: React.FC = () => {
   const [projects, setProjects] = useState<ProjectData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -59,19 +76,19 @@ export const Projects: React.FC = () => {
           </div>
         </ScrollReveal>
 
-        {isLoading ? (
-          <div className="h-[400px] flex items-center justify-center font-mono text-accent-green animate-pulse">
-            DOWNLOAD_IN_PROGRESS...
-          </div>
-        ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {projects.map((project, index) => (
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {isLoading ? (
+            Array.from({ length: 6 }).map((_, i) => (
+              <ProjectSkeleton key={i} />
+            ))
+          ) : (
+            projects.map((project, index) => (
               <ScrollReveal key={project.id || index} delay={index * 0.1}>
                 <ProjectCard {...project} />
               </ScrollReveal>
-            ))}
-          </div>
-        )}
+            ))
+          )}
+        </div>
         
         {!isLoading && projects.length === 0 && (
           <div className="text-center py-20 bg-white/5 border border-dashed border-white/10 rounded">

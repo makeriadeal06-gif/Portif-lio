@@ -5,6 +5,7 @@ import { cn } from "../../lib/utils";
 import { ModelViewer } from "../3d/ModelViewer";
 import { SitePreview } from "./SitePreview";
 import { ProjectData } from "../../types";
+import { logAnalyticsEvent } from "../../lib/firebase";
 
 interface ProjectCardProps extends ProjectData {
   className?: string;
@@ -31,6 +32,25 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isMobile, setIsMobile] = useState(false);
   const previewTimer = useRef<any>(null);
+
+  useEffect(() => {
+    if (isPreviewOpen) {
+      logAnalyticsEvent("view_project", {
+        project_title: title,
+        project_type: type,
+        category: category
+      });
+      if (type === "3D") {
+        logAnalyticsEvent("open_3d_model", { project_title: title });
+      }
+    }
+  }, [isPreviewOpen, title, type, category]);
+
+  useEffect(() => {
+    if (isPreviewOpen && modalActiveTab === "details") {
+      logAnalyticsEvent("view_project_details", { project_title: title });
+    }
+  }, [modalActiveTab, isPreviewOpen, title]);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -132,8 +152,13 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
     >
       <motion.div
         layoutId={`card-${title}`}
-        whileHover={!isMobile ? { scale: 1.02 } : {}}
-        className={cn("group flex flex-col glass-panel hover:border-accent-green/30 transition-all duration-500 overflow-hidden", className)}
+        whileHover={!isMobile ? { 
+          scale: 1.02, 
+          boxShadow: "0 0 30px rgba(0, 255, 149, 0.15)",
+          y: -5
+        } : {}}
+        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+        className={cn("group flex flex-col glass-panel hover:border-accent-green/40 transition-all duration-500 overflow-hidden", className)}
       >
         <div 
           className="relative h-48 overflow-hidden group/img cursor-pointer"
@@ -204,6 +229,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-[10px] font-mono hover:text-accent-green transition-colors group/link"
+                onClick={() => logAnalyticsEvent("click_external_link", { url: projectUrl, type: "live_demo", project: title })}
               >
                 <ExternalLink className="w-3 h-3" />
                 OPEN_LIVE
@@ -215,6 +241,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-[10px] font-mono hover:text-accent-green transition-colors"
+                onClick={() => logAnalyticsEvent("click_external_link", { url: github, type: "github", project: title })}
               >
                 <Github className="w-3 h-3" />
                 SOURCE

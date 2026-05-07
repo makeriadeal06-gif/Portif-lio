@@ -18,7 +18,17 @@ export default function Admin() {
   const [authError, setAuthError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState<string | null>(null);
 
-  const ADMIN_EMAIL = "makeriadeal06@gmail.com";
+  const ADMIN_EMAILS = [
+    "makeriadeal06@gmail.com",
+    "pedrolucas123silva@gmail.com",
+    "logotiposeaia@gmail.com"
+  ];
+
+  // Helper to check if email is admin
+  const checkIsAdmin = (email: string | null) => {
+    if (!email) return false;
+    return ADMIN_EMAILS.includes(email);
+  };
 
   // Form State - Projects
   const initialProjectForm: Partial<ProjectData> = {
@@ -72,7 +82,7 @@ export default function Admin() {
         if (result?.user && isMounted) {
           console.log("[Admin] Redirect result identified:", result.user.email);
           setUser(result.user);
-          setIsAdmin(result.user.email === ADMIN_EMAIL);
+          setIsAdmin(checkIsAdmin(result.user.email));
         }
       } catch (error: any) {
         console.error("[Admin] Redirect check failed:", error);
@@ -91,7 +101,7 @@ export default function Admin() {
       console.log("[Admin] Auth state delta:", u ? u.email : "GUEST");
       if (isMounted) {
         setUser(u);
-        setIsAdmin(u?.email === ADMIN_EMAIL);
+        setIsAdmin(checkIsAdmin(u?.email || null));
         setIsLoading(false);
       }
     });
@@ -349,7 +359,7 @@ export default function Admin() {
           <div className="text-white/40 text-[10px] space-y-2 mb-8 font-mono border border-white/5 p-4 bg-white/2 text-left">
             <p className="italic">
               {user && !isAdmin 
-                ? `Authorized access only. Account [${user.email}] does not have administrative clearance for [${ADMIN_EMAIL}].` 
+                ? `Authorized access only. Account [${user.email}] does not have administrative clearance for the allowed administrators list.` 
                 : authError?.includes("unauthorized-domain")
                   ? "CRITICAL: The current domain is not authorized in your Firebase Project."
                   : authError 

@@ -2,12 +2,31 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, signOut, getRedirectResult, setPersistence, browserLocalPersistence } from 'firebase/auth';
 import { getFirestore, collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, query, where, orderBy, onSnapshot, Timestamp, getDocFromServer } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { getAnalytics, logEvent, isSupported } from 'firebase/analytics';
 import firebaseConfig from '../../firebase-applet-config.json';
 
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 export const auth = getAuth(app);
 export const storage = getStorage(app);
+
+// Analytics Initialization
+export let analytics: any = null;
+isSupported().then(supported => {
+  if (supported) {
+    analytics = getAnalytics(app);
+    console.log("[Firebase] Analytics initialized");
+  }
+});
+
+export const logAnalyticsEvent = (eventName: string, eventParams?: any) => {
+  if (analytics) {
+    logEvent(analytics, eventName, eventParams);
+  } else {
+    // If analytics is not yet initialized or supported, we can queue it or log to console in dev
+    console.debug(`[Analytics-Debug] ${eventName}`, eventParams);
+  }
+};
 
 // Enable Auth persistence
 setPersistence(auth, browserLocalPersistence).catch(err => console.error("Persistence failed:", err));
