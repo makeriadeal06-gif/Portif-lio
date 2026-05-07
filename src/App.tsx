@@ -9,6 +9,7 @@ import { Contact } from "./pages/Contact";
 import Admin from "./pages/Admin";
 import { motion, AnimatePresence } from "motion/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
+import { Analytics } from "@vercel/analytics/react";
 import { logAnalyticsEvent } from "./lib/firebase";
 
 // Analytics component to track page views
@@ -59,6 +60,7 @@ function App() {
         </main>
 
         <SpeedInsights />
+        <Analytics />
 
         <footer className="relative z-10 p-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6 bg-black/40">
           <div className="flex flex-col gap-1">
