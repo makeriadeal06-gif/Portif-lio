@@ -18,44 +18,47 @@ async function startServer() {
   if (!isProduction) {
     const vite = await createViteServer({
       server: { middlewareMode: true },
-      appType: "spa",
+      appType: "custom", // Use custom so we fully manage fallback routing
     });
     app.use(vite.middlewares);
     
     // Explicit SPA fallback for development reload
     app.use('*', async (req, res, next) => {
       const url = req.originalUrl;
-      try {
-        const isFileRequest = url.split('/').pop()?.includes('.');
-        if (isFileRequest) return next();
+      const isHtml = req.headers.accept?.includes("text/html");
+      const hasExtension = path.extname(req.path) !== "";
 
-        let template = fs.readFileSync(path.resolve(__dirname, 'index.html'), 'utf-8');
-        template = await vite.transformIndexHtml(url, template);
-        res.status(200).set({ 'Content-Type': 'text/html' }).end(template);
-      } catch (e) {
-        vite.ssrFixStacktrace(e as Error);
-        next(e);
+      if (isHtml || !hasExtension) {
+        try {
+          let template = fs.readFileSync(path.resolve(__dirname, 'index.html'), 'utf-8');
+          template = await vite.transformIndexHtml(url, template);
+          res.status(200).set({ 'Content-Type': 'text/html' }).end(template);
+        } catch (e) {
+          vite.ssrFixStacktrace(e as Error);
+          next(e);
+        }
+      } else {
+        next();
       }
     });
   } else {
     // Serve static files in production
     app.use(express.static(distPath, {
-      maxAge: '1y',
-      index: false
+      maxAge: '1y'
     }));
     
-    // Support SPA routing - send all non-found requests to index.html for clientside navigation
-    // But ONLY if they don't look like file requests (contain a dot in the last segment)
+    // Support SPA routing - send all non-asset requests to index.html for clientside navigation
     app.get("*", (req, res) => {
-      const isFileRequest = req.path.split('/').pop()?.includes('.');
+      const isHtml = req.headers.accept?.includes("text/html");
+      const hasExtension = path.extname(req.path) !== "";
       
-      if (isFileRequest) {
-        console.warn(`[Server] Missing asset: ${req.path}`);
-        return res.status(404).send('Asset not found');
+      if (isHtml || !hasExtension) {
+        console.log(`[Server] Routing to SPA index for: ${req.path}`);
+        return res.sendFile(path.join(distPath, 'index.html'));
       }
 
-      console.log(`[Server] Routing to SPA index for: ${req.path}`);
-      res.sendFile(path.join(distPath, 'index.html'));
+      console.warn(`[Server] Asset not found: ${req.path}`);
+      res.status(404).send('Asset not found');
     });
   }
 

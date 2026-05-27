@@ -2,5 +2,5 @@
   "name": "Pedro Lucas - Ghost System",
   "description": "Professional futurist portfolio for Pedro Lucas, specializing in Eletrotécnica, Systems Development (Full-Stack + IA), and 3D Modeling.",
   "requestFramePermissions": [],
-  "majorCapabilities": []
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

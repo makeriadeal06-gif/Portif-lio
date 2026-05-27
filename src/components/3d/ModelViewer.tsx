@@ -37,32 +37,77 @@ const ModelObject: React.FC<{ url: string; format: string }> = ({ url, format })
     }, [geometry]);
 
     return (
-      <mesh geometry={geometry} castShadow receiveShadow>
-        <meshStandardMaterial 
-          color="#888888" 
-          metalness={0.7}
-          roughness={0.2}
-          envMapIntensity={1.5}
-          precision="mediump"
-        />
-      </mesh>
+      <group>
+        {/* Semi-transparent dark green solid body chassis */}
+        <mesh geometry={geometry} castShadow receiveShadow>
+          <meshStandardMaterial 
+            color="#06120c" 
+            roughness={0.2}
+            metalness={0.8}
+            transparent
+            opacity={0.8}
+            envMapIntensity={1.5}
+            precision="mediump"
+          />
+        </mesh>
+        {/* Highly visible glowing cyan-green wireframe tracker */}
+        <mesh geometry={geometry}>
+          <meshBasicMaterial 
+            color="#00ff95" 
+            wireframe 
+            transparent 
+            opacity={0.9}
+            blending={THREE.AdditiveBlending}
+            depthWrite={false}
+          />
+        </mesh>
+      </group>
     );
   } else if (format === "3mf") {
     const object = useLoader(ThreeMFLoader, url);
     
     useMemo(() => {
       if (object) {
-        // Fix shadows and materials for all meshes
+        const solidMat = new THREE.MeshStandardMaterial({
+          color: new THREE.Color("#06120c"),
+          roughness: 0.2,
+          metalness: 0.8,
+          transparent: true,
+          opacity: 0.8,
+          envMapIntensity: 1.5,
+          precision: "mediump"
+        });
+
+        const wireframeMat = new THREE.MeshBasicMaterial({
+          color: new THREE.Color("#00ff95"),
+          wireframe: true,
+          transparent: true,
+          opacity: 0.9,
+          blending: THREE.AdditiveBlending,
+          depthWrite: false
+        });
+
+        const meshesToClone: THREE.Mesh[] = [];
+
+        // Collect meshes to wireframe-clone
         object.traverse((child) => {
-          if ((child as THREE.Mesh).isMesh) {
-            child.castShadow = true;
-            child.receiveShadow = true;
-            const mesh = child as THREE.Mesh;
-            if (mesh.material) {
-              const mat = mesh.material as THREE.MeshStandardMaterial;
-              mat.envMapIntensity = 1.5;
-              mat.precision = "mediump";
-            }
+          if ((child as THREE.Mesh).isMesh && !child.userData.isWireframeCloned) {
+            meshesToClone.push(child as THREE.Mesh);
+          }
+        });
+
+        // Mutate geometries to apply our beautiful neon edge tracers
+        meshesToClone.forEach((mesh) => {
+          mesh.castShadow = true;
+          mesh.receiveShadow = true;
+          mesh.material = solidMat;
+          mesh.userData.isWireframeCloned = true;
+
+          const wireframeMesh = mesh.clone();
+          wireframeMesh.material = wireframeMat;
+          wireframeMesh.userData.isWireframeCloned = true;
+          if (mesh.parent) {
+            mesh.parent.add(wireframeMesh);
           }
         });
 
@@ -87,17 +132,44 @@ const ModelObject: React.FC<{ url: string; format: string }> = ({ url, format })
     
     useMemo(() => {
       if (gltf.scene) {
-        // Fix shadows and materials for all meshes
+        const solidMat = new THREE.MeshStandardMaterial({
+          color: new THREE.Color("#06120c"),
+          roughness: 0.2,
+          metalness: 0.8,
+          transparent: true,
+          opacity: 0.8,
+          envMapIntensity: 1.5,
+          precision: "mediump"
+        });
+
+        const wireframeMat = new THREE.MeshBasicMaterial({
+          color: new THREE.Color("#00ff95"),
+          wireframe: true,
+          transparent: true,
+          opacity: 0.9,
+          blending: THREE.AdditiveBlending,
+          depthWrite: false
+        });
+
+        const meshesToClone: THREE.Mesh[] = [];
+
         gltf.scene.traverse((child) => {
-          if ((child as THREE.Mesh).isMesh) {
-            child.castShadow = true;
-            child.receiveShadow = true;
-            const mesh = child as THREE.Mesh;
-            if (mesh.material) {
-              const mat = mesh.material as THREE.MeshStandardMaterial;
-              mat.envMapIntensity = 1.5;
-              mat.precision = "mediump";
-            }
+          if ((child as THREE.Mesh).isMesh && !child.userData.isWireframeCloned) {
+            meshesToClone.push(child as THREE.Mesh);
+          }
+        });
+
+        meshesToClone.forEach((mesh) => {
+          mesh.castShadow = true;
+          mesh.receiveShadow = true;
+          mesh.material = solidMat;
+          mesh.userData.isWireframeCloned = true;
+
+          const wireframeMesh = mesh.clone();
+          wireframeMesh.material = wireframeMat;
+          wireframeMesh.userData.isWireframeCloned = true;
+          if (mesh.parent) {
+            mesh.parent.add(wireframeMesh);
           }
         });
 
@@ -197,6 +269,46 @@ const ModelLoader = () => {
   );
 };
 
+const BaseHologramGeo: React.FC<{ type: 'octahedron' | 'dodecahedron' | 'icosahedron' | 'tetrahedron' | 'torus' | 'sphere' | 'knot' }> = ({ type }) => {
+  const geometry = useMemo(() => {
+    switch (type) {
+      case 'octahedron': return new THREE.OctahedronGeometry(1, 0);
+      case 'dodecahedron': return new THREE.DodecahedronGeometry(1, 0);
+      case 'icosahedron': return new THREE.IcosahedronGeometry(1, 0);
+      case 'tetrahedron': return new THREE.TetrahedronGeometry(1, 0);
+      case 'torus': return new THREE.TorusGeometry(0.8, 0.3, 16, 64);
+      case 'sphere': return new THREE.SphereGeometry(0.8, 30, 30);
+      case 'knot': return new THREE.TorusKnotGeometry(0.5, 0.18, 120, 24);
+    }
+  }, [type]);
+
+  return (
+    <group>
+      <mesh geometry={geometry} castShadow receiveShadow>
+        <meshStandardMaterial 
+          color="#06120c" 
+          roughness={0.2}
+          metalness={0.8}
+          transparent
+          opacity={0.8}
+          envMapIntensity={1.5}
+          precision="mediump"
+        />
+      </mesh>
+      <mesh geometry={geometry}>
+        <meshBasicMaterial 
+          color="#00ff95" 
+          wireframe 
+          transparent 
+          opacity={0.9}
+          blending={THREE.AdditiveBlending}
+          depthWrite={false}
+        />
+      </mesh>
+    </group>
+  );
+};
+
 const ModelContent: React.FC<{ model: string | ModelData }> = ({ model }) => {
   const url = typeof model === "string" ? model : model.url;
   
@@ -208,62 +320,27 @@ const ModelContent: React.FC<{ model: string | ModelData }> = ({ model }) => {
     return 'glb';
   }, [model, url]);
 
-  // Handle local placeholders
+  // Handle local placeholders with beautiful glowing dual-material holograms
   if (url.includes("octahedron.glb")) {
-    return (
-      <mesh castShadow receiveShadow>
-        <octahedronGeometry args={[1, 0]} />
-        <meshStandardMaterial color="#00ff41" wireframe precision="mediump" envMapIntensity={0.5} />
-      </mesh>
-    );
+    return <BaseHologramGeo type="octahedron" />;
   }
   if (url.includes("dodecahedron.glb")) {
-    return (
-      <mesh castShadow receiveShadow>
-        <dodecahedronGeometry args={[1, 0]} />
-        <meshStandardMaterial color="#00ff41" wireframe precision="mediump" envMapIntensity={0.5} />
-      </mesh>
-    );
+    return <BaseHologramGeo type="dodecahedron" />;
   }
   if (url.includes("icosahedron.glb")) {
-    return (
-      <mesh castShadow receiveShadow>
-        <icosahedronGeometry args={[1, 0]} />
-        <meshStandardMaterial color="#00ff41" wireframe precision="mediump" envMapIntensity={0.5} />
-      </mesh>
-    );
+    return <BaseHologramGeo type="icosahedron" />;
   }
   if (url.includes("tetrahedron.glb")) {
-    return (
-      <mesh castShadow receiveShadow>
-        <tetrahedronGeometry args={[1, 0]} />
-        <meshStandardMaterial color="#00ff41" wireframe precision="mediump" envMapIntensity={0.5} />
-      </mesh>
-    );
+    return <BaseHologramGeo type="tetrahedron" />;
   }
   if (url.includes("torus.glb")) {
-    return (
-      <mesh castShadow receiveShadow>
-        <torusGeometry args={[0.8, 0.3, 12, 48]} />
-        <meshStandardMaterial color="#00ff41" wireframe precision="mediump" envMapIntensity={0.5} />
-      </mesh>
-    );
+    return <BaseHologramGeo type="torus" />;
   }
   if (url.includes("sphere.glb")) {
-    return (
-      <mesh castShadow receiveShadow>
-        <sphereGeometry args={[0.8, 32, 32]} />
-        <meshStandardMaterial color="#00ff41" wireframe precision="mediump" envMapIntensity={0.5} />
-      </mesh>
-    );
+    return <BaseHologramGeo type="sphere" />;
   }
   if (url.includes("knot.glb")) {
-    return (
-      <mesh castShadow receiveShadow>
-        <torusKnotGeometry args={[0.6, 0.2, 120, 24]} />
-        <meshStandardMaterial color="#00ff41" wireframe precision="mediump" envMapIntensity={0.5} />
-      </mesh>
-    );
+    return <BaseHologramGeo type="knot" />;
   }
 
   return (
